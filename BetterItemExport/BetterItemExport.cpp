@@ -2,30 +2,32 @@
 #include "BetterItemExport.h"
 #include <sstream>
 #include <set>
-
+#include <fstream>
 
 BAKKESMOD_PLUGIN(BetterItemExport, "write a plugin description here", plugin_version, PLUGINTYPE_FREEPLAY)
 
 
 void BetterItemExport::onLoad()
 {
-	auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
-	int i = 0;
-	for (auto item : items) {
-		if (item.memory_address == 0) continue;
-		auto prod = GetProductData(item);
-		if (prod.paintable) {
-			cvarManager->log("\n" + prod.DebugString());
-		}
-		i++;
-		if (i > 50) break;
-	}
-	auto seDb = gameWrapper->GetItemsWrapper().GetSpecialEditionDB();
-	auto testProd = gameWrapper->GetItemsWrapper().GetProduct(4947);
-	auto prod = GetProductData(testProd);
-	//seDb.
+	//auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
+	//int i = 0;
+	//for (auto item : items) {
+	//	if (item.memory_address == 0) continue;
+	//	auto prod = GetProductData(item);
+	//	if (prod.paintable) {
+	//		cvarManager->log("\n" + prod.DebugString());
+	//	}
+	//	i++;
+	//	if (i > 50) break;
+	//}
+	//auto seDb = gameWrapper->GetItemsWrapper().GetSpecialEditionDB();
+	//auto testProd = gameWrapper->GetItemsWrapper().GetProduct(4947);
+	//auto prod = GetProductData(testProd);
+	////seDb.
 
-	cvarManager->log("\n" + prod.DebugString());
+	//cvarManager->log("\n" + prod.DebugString());
+
+	cvarManager->registerNotifier("rlcd_export", [this](auto args) {RLCDExport(); }, "", 0);
 
 }
 
@@ -51,12 +53,6 @@ std::tuple<bool, SpecialEdition> BetterItemExport::IsSpecialEdition(ProductWrapp
 				}
 			}
 		}
-		//for (auto& [productId,edition] : specialEditionSet) {
-		//	std::stringstream ss;
-		//	//auto seName = seDb.GetSpecialEditionName(edition);
-		//	ss << "ProductId: " << productId << " EditionId: " << edition.editionId << " Name: " << edition.label;
-		//	cvarManager->log(ss.str());
-		//}
 	}
 	if (auto it = specialEditionSet.find(prod.GetID()); it != specialEditionSet.end()) {
 		return {true, it->second};
@@ -152,6 +148,38 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 		data.qualityName = "Unknown";
 		break;
 	}
+}
+
+void BetterItemExport::RLCDExport()
+{
+	std::set<EQUIPSLOT> slotsToExport{ EQUIPSLOT::BODY, EQUIPSLOT::ROCKETBOOST, EQUIPSLOT::WHEELS, EQUIPSLOT::TRAIL };
+	auto itemsToExport = GetProductsBySlot(slotsToExport);
+	std::ofstream csv("rlcd_export.csv");
+	for (auto item : itemsToExport) {
+		csv << item.productName << ","
+			<< item.id << ","
+			<< item.qualityName << ","
+			<< item.slot << ","
+			<< (item.paintable ? "Paintable": "Unpaintable") << ","
+			<< item.assetName << ","
+			<< item.thumbnailName << ","
+			<< std::endl;
+	}
+	csv.close();
+}
+
+std::vector<ProductData> BetterItemExport::GetProductsBySlot(std::set<EQUIPSLOT>& slotsToExport)
+{
+	auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
+	std::vector<ProductData> products;
+	for (auto item : items) {
+		if (item.memory_address == 0) continue;
+		auto prod = GetProductData(item);
+		if (slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end()) {
+			products.push_back(prod);
+		}
+	}
+	return products;
 }
 
 std::string ProductData::DebugString()

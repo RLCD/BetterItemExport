@@ -8,5 +8,6 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <set>
 
 #include "imgui/imgui.h"

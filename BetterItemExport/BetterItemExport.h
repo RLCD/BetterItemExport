@@ -5,6 +5,36 @@
 #include "bakkesmod/wrappers/items/ItemsWrapper.h"
 constexpr auto plugin_version = "1.0";
 
+enum class EQUIPSLOT {
+	BODY = 0,
+	DECAL = 1,
+	WHEELS = 2,
+	ROCKETBOOST = 3,
+	ANTENNA = 4,
+	TOPPER = 5,
+	BUMPER = 6,
+	PAINTFINISH = 7,
+	BOT = 8,
+	LOGO = 9,
+	UNDERGLOW = 10,
+	CRATES = 11,
+	CUSTOMFINISH = 12,
+	ENGINEAUDIO = 13,
+	TRAIL = 14,
+	GOALEXPLOSION = 15,
+	PLAYERBANNER = 16,
+	GARAGECOMPLEXROW = 17,
+	GOALSTINGER = 18,
+	PLAYERAVATAR = 19,
+	AVATARBORDER = 20,
+	PLAYERTITLE = 21,
+	ESPORTSTEAM = 22,
+	ARCHIVEDITEMS = 23,
+	BLUEPRINTS = 24,
+	SHOPITEM = 25,
+	CURRENCY = 26
+};
+
 struct ProductData {
 	int id;
 	std::string productName;
@@ -53,6 +83,10 @@ class BetterItemExport: public BakkesMod::Plugin::BakkesModPlugin/*, public Bakk
 	void GetCompatibleProducts(ProductWrapper& prod, ProductData& data);
 
 	void GetProductQuality(ProductWrapper& prod, ProductData& data);
+
+	void RLCDExport();
+
+	std::vector<ProductData> GetProductsBySlot(std::set<EQUIPSLOT>& slotsToExport);
 
 	// Inherited via PluginWindow
 	/*
