@@ -82,6 +82,7 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 	GetProductQuality(prod, data);
 
 	data.assetName = prod.GetAssetPackageName();
+	data.assetPath = prod.GetAssetPath().ToString();
 	data.thumbnailName = prod.GetThumbnailAssetName();
 
 	data.paintable = prod.IsPaintable();
@@ -152,17 +153,42 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 
 void BetterItemExport::RLCDExport()
 {
-	std::set<EQUIPSLOT> slotsToExport{ EQUIPSLOT::BODY, EQUIPSLOT::ROCKETBOOST, EQUIPSLOT::WHEELS, EQUIPSLOT::TRAIL };
+	std::set<EQUIPSLOT> slotsToExport{ 
+		EQUIPSLOT::BODY, 
+		EQUIPSLOT::ROCKETBOOST, 
+		EQUIPSLOT::WHEELS, 
+		EQUIPSLOT::ANTENNA, 
+		EQUIPSLOT::TRAIL, 
+		EQUIPSLOT::DECAL };
 	auto itemsToExport = GetProductsBySlot(slotsToExport);
+
+	json j = itemsToExport;
+	std::ofstream myfile;
+	myfile.open("rlcd_export.json");
+	if (myfile)
+	{
+		myfile << j.dump(4, ' ', true, json::error_handler_t::ignore);
+	}
+	myfile.close();
 	std::ofstream csv("rlcd_export.csv");
+	//print headers
+	csv << "ID" << ","
+		<< "Name" << ","
+		<< "IsPaintable" << ","
+		<< "Slot" << ","
+		<< "AssetPath" << ","
+		<< "Quality" << ","
+		<< std::endl;
+
+	// print item data
 	for (auto item : itemsToExport) {
-		csv << item.productName << ","
+		csv 
 			<< item.id << ","
-			<< item.qualityName << ","
+			<< item.productName << ","
+			<< (item.paintable ? "1": "0") << ","
 			<< item.slot << ","
-			<< (item.paintable ? "Paintable": "Unpaintable") << ","
-			<< item.assetName << ","
-			<< item.thumbnailName << ","
+			<< item.assetPath << ","
+			<< item.qualityName << ","
 			<< std::endl;
 	}
 	csv.close();
@@ -202,4 +228,22 @@ std::string ProductData::DebugString()
 	
 
 	return ss.str();
+}
+
+void to_json(json& j, const ProductData& p)
+{
+	j = json{ 
+		{ "productName", p.productName }, 
+		{ "id", p.id }, 
+		{ "paintable", p.paintable }, 
+		{ "qualityId", p.qualityId }, 
+		{ "qualityName", p.qualityName }, 
+		{ "slot", p.slot }, 
+		{ "slotId", p.slotId }, 
+		{ "isSpecialEdition", p.isSpecialEdition }, 
+		{ "specialEditionLabel", p.specialEditionLabel }, 
+		{ "compatibleProducts", p.compatibleProducts },
+		{ "assetName", p.assetName },
+		{ "thumbnailName", p.thumbnailName },
+	};
 }

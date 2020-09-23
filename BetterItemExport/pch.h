@@ -9,5 +9,7 @@
 #include <functional>
 #include <memory>
 #include <set>
+#include "json/json.hpp"
+using namespace nlohmann;
 
 #include "imgui/imgui.h"

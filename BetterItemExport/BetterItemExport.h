@@ -53,11 +53,14 @@ struct ProductData {
 	std::vector<int> compatibleProducts;
 
 	std::string assetName;
+	std::string assetPath;
 	std::string thumbnailName;
 
 	std::string DebugString();
 
 };
+
+void to_json(json& j, const ProductData& p);
 
 
 struct ItemData {
