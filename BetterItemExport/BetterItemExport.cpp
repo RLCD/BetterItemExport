@@ -159,7 +159,8 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::WHEELS, 
 		EQUIPSLOT::ANTENNA, 
 		EQUIPSLOT::TRAIL, 
-		EQUIPSLOT::DECAL };
+		EQUIPSLOT::DECAL,
+		EQUIPSLOT::TOPPER };
 	auto itemsToExport = GetProductsBySlot(slotsToExport);
 
 	json j = itemsToExport;
