@@ -190,7 +190,7 @@ void BetterItemExport::RLCDExport()
 			<< (item.paintable ? "1": "0") << ","
 			<< item.slot << ","
 			<< item.assetPath << ","
-			<< item.qualityName << ","
+			<< item.qualityName
 			<< std::endl;
 	}
 	csv.close();
