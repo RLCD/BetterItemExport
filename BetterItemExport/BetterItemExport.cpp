@@ -144,7 +144,9 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 	case Limited:
 		data.qualityName = "Limited";
 		break;
-	case MAX:
+	case 9: // TODO: replace with Legacy when it's available upstream
+		data.qualityName = "Legacy";
+		break;
 	default:
 		data.qualityName = "Unknown";
 		break;
