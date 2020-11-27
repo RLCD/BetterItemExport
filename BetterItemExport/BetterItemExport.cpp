@@ -178,6 +178,7 @@ void BetterItemExport::RLCDExport()
 		5368, // Uncommon Drop
 		5369, // Very Rare Drop
 	};
+	std::ofstream log{"rlcd_export.log"};
 	auto itemsToExport = GetProducts([&](ProductData& prod) {
 		if (prod.id != 0 &&
 			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
@@ -187,6 +188,20 @@ void BetterItemExport::RLCDExport()
 		}
 		return false;
 	});
+
+	// Find duplicate items, removing the lower/replaced
+	for (auto i = itemsToExport.begin(); i != itemsToExport.end(); ++i) {
+		for (auto j = i + 1; j != itemsToExport.end(); ++j) {
+			const auto a = *i;
+			const auto b = *j;
+			if (a.assetPath == b.assetPath) {
+				log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
+					<< " (" << b.productName << ") have the same asset path ("
+					<< a.assetPath << "), dropping " << a.id << "\n";
+				itemsToExport.erase(i);
+			}
+		}
+	}
 
 	json j = itemsToExport;
 	std::ofstream myfile;
