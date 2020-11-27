@@ -88,8 +88,9 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 	data.paintable = prod.IsPaintable();
 
 	auto [isSe, edition] = IsSpecialEdition(prod);
-	data.isSpecialEdition = isSe;
-	data.specialEditionLabel = edition.label;
+	if (isSe) {
+		data.productName += ": " + edition.label;
+	}
 
 	GetCompatibleProducts(prod, data);
 
@@ -231,8 +232,7 @@ std::string ProductData::DebugString()
 		<< "Quality: " << qualityName << "(" << qualityId << ")\n"
 		<< "Asset:" << assetName << "\n"
 		<< "Thumbnail:" << thumbnailName << "\n"
-		<< (paintable ? "Paintable\n" : "")
-		<< (isSpecialEdition ? "Special edition:" + specialEditionLabel + "\n" : "");
+		<< (paintable ? "Paintable\n" : "");
 
 	if (!compatibleProducts.empty()) {
 		ss << "Compatible bodies:\n";
@@ -255,8 +255,6 @@ void to_json(json& j, const ProductData& p)
 		{ "qualityName", p.qualityName }, 
 		{ "slot", p.slot }, 
 		{ "slotId", p.slotId }, 
-		{ "isSpecialEdition", p.isSpecialEdition }, 
-		{ "specialEditionLabel", p.specialEditionLabel }, 
 		{ "compatibleProducts", p.compatibleProducts },
 		{ "assetName", p.assetName },
 		{ "thumbnailName", p.thumbnailName },

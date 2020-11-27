@@ -46,10 +46,6 @@ struct ProductData {
 	int qualityId;
 	std::string qualityName;
 
-
-	bool isSpecialEdition;
-	std::string specialEditionLabel;
-
 	bool paintable;
 	std::vector<int> compatibleProducts;
 
