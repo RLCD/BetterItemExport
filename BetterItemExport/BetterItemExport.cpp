@@ -164,7 +164,8 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::TRAIL, 
 		EQUIPSLOT::DECAL,
 		EQUIPSLOT::TOPPER,
-		EQUIPSLOT::PAINTFINISH };
+		EQUIPSLOT::PAINTFINISH
+	};
 	std::set<int> itemsToExclude{
 		1412, // Mystery Universal Decal
 		1470, // Black Market Preview
