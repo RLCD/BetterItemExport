@@ -164,7 +164,18 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::DECAL,
 		EQUIPSLOT::TOPPER,
 		EQUIPSLOT::PAINTFINISH };
-	auto itemsToExport = GetProductsBySlot(slotsToExport);
+	std::set<int> itemsToExclude{
+		3315,
+		3316 };
+	auto itemsToExport = GetProducts([&](ProductData& prod) {
+		if (prod.id != 0 &&
+			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
+			itemsToExclude.find(prod.id) == itemsToExclude.end())
+		{
+			return true;
+		}
+		return false;
+	});
 
 	json j = itemsToExport;
 	std::ofstream myfile;
@@ -198,14 +209,14 @@ void BetterItemExport::RLCDExport()
 	csv.close();
 }
 
-std::vector<ProductData> BetterItemExport::GetProductsBySlot(std::set<EQUIPSLOT>& slotsToExport)
+std::vector<ProductData> BetterItemExport::GetProducts(std::function<bool(ProductData&)> filter)
 {
 	auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
 	std::vector<ProductData> products;
 	for (auto item : items) {
 		if (item.memory_address == 0) continue;
 		auto prod = GetProductData(item);
-		if (slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end()) {
+		if (filter(prod)) {
 			products.push_back(prod);
 		}
 	}

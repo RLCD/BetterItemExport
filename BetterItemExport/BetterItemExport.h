@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/wrappers/items/ItemsWrapper.h"
@@ -89,7 +90,7 @@ class BetterItemExport: public BakkesMod::Plugin::BakkesModPlugin/*, public Bakk
 
 	void RLCDExport();
 
-	std::vector<ProductData> GetProductsBySlot(std::set<EQUIPSLOT>& slotsToExport);
+	std::vector<ProductData> GetProducts(std::function<bool(ProductData&)> filter = [](ProductData&){return true;});
 
 	// Inherited via PluginWindow
 	/*
