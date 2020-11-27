@@ -166,8 +166,18 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::TOPPER,
 		EQUIPSLOT::PAINTFINISH };
 	std::set<int> itemsToExclude{
-		3315,
-		3316 };
+		1412, // Mystery Universal Decal
+		1470, // Black Market Preview
+		3138, // Mystery Item
+		3315, // Random Certified Item
+		3316, // Random Painted Item
+		5364, // Black Market Drop
+		5365, // Exotic Drop
+		5366, // Import Drop
+		5367, // Rare Drop
+		5368, // Uncommon Drop
+		5369, // Very Rare Drop
+	};
 	auto itemsToExport = GetProducts([&](ProductData& prod) {
 		if (prod.id != 0 &&
 			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
