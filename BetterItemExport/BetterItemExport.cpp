@@ -191,17 +191,23 @@ void BetterItemExport::RLCDExport()
 	});
 
 	// Find duplicate items, removing the lower/replaced
-	for (auto i = itemsToExport.begin(); i != itemsToExport.end(); ++i) {
-		for (auto j = i + 1; j != itemsToExport.end(); ++j) {
+	for (auto i = itemsToExport.begin(); i != itemsToExport.end();) {
+		// If there are any duplicate items with a higher id, remove this one
+		const auto j = std::find_if(i + 1, itemsToExport.end(), [&](auto item) {
+			if ((*i).assetPath == item.assetPath)
+				return true;
+			return false;
+		});
+
+		if (j == itemsToExport.end()) {
+			++i;
+		} else {
 			const auto a = *i;
 			const auto b = *j;
-			if (a.assetPath == b.assetPath) {
-				log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
-					<< " (" << b.productName << ") have the same asset path ("
-					<< a.assetPath << "), dropping " << a.id << "\n";
-				i = itemsToExport.erase(i);
-				j = i + 1;
-			}
+			log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
+				<< " (" << b.productName << ") have the same asset path ("
+				<< a.assetPath << "), dropping " << a.id << "\n";
+			i = itemsToExport.erase(i);
 		}
 	}
 
