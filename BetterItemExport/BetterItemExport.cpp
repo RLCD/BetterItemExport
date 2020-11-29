@@ -88,8 +88,9 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 	data.paintable = prod.IsPaintable();
 
 	auto [isSe, edition] = IsSpecialEdition(prod);
-	data.isSpecialEdition = isSe;
-	data.specialEditionLabel = edition.label;
+	if (isSe) {
+		data.productName += ": " + edition.label;
+	}
 
 	GetCompatibleProducts(prod, data);
 
@@ -163,10 +164,22 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::TRAIL, 
 		EQUIPSLOT::DECAL,
 		EQUIPSLOT::TOPPER,
-		EQUIPSLOT::PAINTFINISH };
+		EQUIPSLOT::PAINTFINISH
+	};
 	std::set<int> itemsToExclude{
-		3315,
-		3316 };
+		1412, // Mystery Universal Decal
+		1470, // Black Market Preview
+		3138, // Mystery Item
+		3315, // Random Certified Item
+		3316, // Random Painted Item
+		5364, // Black Market Drop
+		5365, // Exotic Drop
+		5366, // Import Drop
+		5367, // Rare Drop
+		5368, // Uncommon Drop
+		5369, // Very Rare Drop
+	};
+	std::ofstream log{"rlcd_export.log"};
 	auto itemsToExport = GetProducts([&](ProductData& prod) {
 		if (prod.id != 0 &&
 			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
@@ -176,6 +189,27 @@ void BetterItemExport::RLCDExport()
 		}
 		return false;
 	});
+
+	// Find duplicate items, removing the lower/replaced
+	for (auto i = itemsToExport.begin(); i != itemsToExport.end();) {
+		// If there are any duplicate items with a higher id, remove this one
+		const auto j = std::find_if(i + 1, itemsToExport.end(), [&](auto item) {
+			if ((*i).assetPath == item.assetPath)
+				return true;
+			return false;
+		});
+
+		if (j == itemsToExport.end()) {
+			++i;
+		} else {
+			const auto a = *i;
+			const auto b = *j;
+			log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
+				<< " (" << b.productName << ") have the same asset path ("
+				<< a.assetPath << "), dropping " << a.id << "\n";
+			i = itemsToExport.erase(i);
+		}
+	}
 
 	json j = itemsToExport;
 	std::ofstream myfile;
@@ -231,8 +265,7 @@ std::string ProductData::DebugString()
 		<< "Quality: " << qualityName << "(" << qualityId << ")\n"
 		<< "Asset:" << assetName << "\n"
 		<< "Thumbnail:" << thumbnailName << "\n"
-		<< (paintable ? "Paintable\n" : "")
-		<< (isSpecialEdition ? "Special edition:" + specialEditionLabel + "\n" : "");
+		<< (paintable ? "Paintable\n" : "");
 
 	if (!compatibleProducts.empty()) {
 		ss << "Compatible bodies:\n";
@@ -255,8 +288,6 @@ void to_json(json& j, const ProductData& p)
 		{ "qualityName", p.qualityName }, 
 		{ "slot", p.slot }, 
 		{ "slotId", p.slotId }, 
-		{ "isSpecialEdition", p.isSpecialEdition }, 
-		{ "specialEditionLabel", p.specialEditionLabel }, 
 		{ "compatibleProducts", p.compatibleProducts },
 		{ "assetName", p.assetName },
 		{ "thumbnailName", p.thumbnailName },
