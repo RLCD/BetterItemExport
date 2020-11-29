@@ -199,7 +199,8 @@ void BetterItemExport::RLCDExport()
 				log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
 					<< " (" << b.productName << ") have the same asset path ("
 					<< a.assetPath << "), dropping " << a.id << "\n";
-				itemsToExport.erase(i);
+				i = itemsToExport.erase(i);
+				j = i + 1;
 			}
 		}
 	}
