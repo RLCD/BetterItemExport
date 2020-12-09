@@ -106,6 +106,7 @@ void BetterItemExport::GetCompatibleProducts(ProductWrapper& prod, ProductData& 
 		if (att.GetAttributeType() == "ProductAttribute_BodyCompatibility_TA") {
 			auto bodyCompt = ProductAttribute_BodyCompatibilityWrapper(att.memory_address);
 			for (auto compatBody : bodyCompt.GetCompatibleBodies()) {
+				if (compatBody.IsNull()) continue;
 				data.compatibleProducts.push_back(compatBody.GetID());
 			}
 		}
@@ -179,7 +180,7 @@ void BetterItemExport::RLCDExport()
 		5368, // Uncommon Drop
 		5369, // Very Rare Drop
 	};
-	std::ofstream log{"rlcd_export.log"};
+	std::ofstream log{gameWrapper->GetBakkesModPath() / "rlcd_export.log"};
 	auto itemsToExport = GetProducts([&](ProductData& prod) {
 		if (prod.id != 0 &&
 			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
@@ -213,13 +214,13 @@ void BetterItemExport::RLCDExport()
 
 	json j = itemsToExport;
 	std::ofstream myfile;
-	myfile.open("rlcd_export.json");
+	myfile.open(gameWrapper->GetBakkesModPath() / "rlcd_export.json");
 	if (myfile)
 	{
 		myfile << j.dump(4, ' ', true, json::error_handler_t::ignore);
 	}
 	myfile.close();
-	std::ofstream csv("rlcd_export.csv");
+	std::ofstream csv(gameWrapper->GetBakkesModPath() / "rlcd_export.csv");
 	//print headers
 	csv << "ID" << ","
 		<< "Name" << ","
