@@ -77,12 +77,12 @@ class BetterItemExport: public BakkesMod::Plugin::BakkesModPlugin/*, public Bakk
 	virtual void onLoad();
 	virtual void onUnload();
 
-	std::tuple<bool, SpecialEdition> IsSpecialEdition(ProductWrapper& prod);
+	std::tuple<bool, SpecialEdition> IsSpecialEdition(ProductWrapper& prod_to_check);
 	ProductData GetProductData(ProductWrapper& prod);
 
-	void GetCompatibleProducts(ProductWrapper& prod, ProductData& data);
+	static void GetCompatibleProducts(ProductWrapper& prod, ProductData& data);
 
-	void GetProductQuality(ProductWrapper& prod, ProductData& data);
+	static void GetProductQuality(ProductWrapper& prod, ProductData& data);
 
 	void RLCDExport();
 

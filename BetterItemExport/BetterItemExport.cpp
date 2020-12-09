@@ -9,58 +9,36 @@ BAKKESMOD_PLUGIN(BetterItemExport, "write a plugin description here", plugin_ver
 
 void BetterItemExport::onLoad()
 {
-	//auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
-	//int i = 0;
-	//for (auto item : items) {
-	//	if (item.memory_address == 0) continue;
-	//	auto prod = GetProductData(item);
-	//	if (prod.paintable) {
-	//		cvarManager->log("\n" + prod.DebugString());
-	//	}
-	//	i++;
-	//	if (i > 50) break;
-	//}
-	//auto seDb = gameWrapper->GetItemsWrapper().GetSpecialEditionDB();
-	//auto testProd = gameWrapper->GetItemsWrapper().GetProduct(4947);
-	//auto prod = GetProductData(testProd);
-	////seDb.
-
-	//cvarManager->log("\n" + prod.DebugString());
-
-	cvarManager->registerNotifier("rlcd_export", [this](auto args) {RLCDExport(); }, "", 0);
-
+	cvarManager->registerNotifier("rlcd_export", [this](...) {RLCDExport(); }, "", 0);
 }
 
 void BetterItemExport::onUnload()
 {
 }
 
-std::tuple<bool, SpecialEdition> BetterItemExport::IsSpecialEdition(ProductWrapper& prod)
+std::tuple<bool, SpecialEdition> BetterItemExport::IsSpecialEdition(ProductWrapper& prod_to_check)
 {
 
-	static std::map<int, SpecialEdition> specialEditionSet;
-	if (specialEditionSet.empty()) {
-		auto allProducts = gameWrapper->GetItemsWrapper().GetAllProducts();
-		for (auto prod : allProducts) {
+	static std::map<int, SpecialEdition> special_edition_set;
+	if (special_edition_set.empty()) {
+		auto all_products = gameWrapper->GetItemsWrapper().GetAllProducts();
+		for (auto prod : all_products) {
 			if (prod.memory_address == 0) continue;
 			for (auto att : prod.GetAttributes()) {
 				if (att.GetAttributeType() == "ProductAttribute_SpecialEditionSettings_TA") {
 					auto se_attribute = ProductAttribute_SpecialEditionSettingsWrapper(att.memory_address);
 					auto editions = se_attribute.GetEditions();
-					for (auto edition : editions) {
-						specialEditionSet.insert({ edition.productId, edition });
+					for (const auto& edition : editions) {
+						special_edition_set.insert({ edition.productId, edition });
 					}
 				}
 			}
 		}
 	}
-	if (auto it = specialEditionSet.find(prod.GetID()); it != specialEditionSet.end()) {
+	if (auto it = special_edition_set.find(prod_to_check.GetID()); it != special_edition_set.end()) {
 		return {true, it->second};
 	}
-	else {
-		return { false, SpecialEdition{} };
-	}
-	
+	return { false, SpecialEdition{} };
 }
 
 ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
@@ -74,8 +52,8 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 	data.id = prod.GetID();
 
 	if (auto slot = prod.GetSlot(); slot.memory_address != 0) {
-		auto slotName = slot.GetLabel();
-		data.slot = slotName.IsNull() ? "" : slot.GetLabel().ToString();
+		auto slot_name = slot.GetLabel();
+		data.slot = slot_name.IsNull() ? "" : slot.GetLabel().ToString();
 		data.slotId = slot.GetSlotIndex();
 	}
 
@@ -99,15 +77,15 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 
 void BetterItemExport::GetCompatibleProducts(ProductWrapper& prod, ProductData& data)
 {
-	if (auto reqProd = prod.GetRequiredProduct(); reqProd.memory_address != 0) {
-		data.compatibleProducts.push_back(reqProd.GetID());
+	if (auto req_prod = prod.GetRequiredProduct(); req_prod.memory_address != 0) {
+		data.compatibleProducts.push_back(req_prod.GetID());
 	}
 	for (auto att : prod.GetAttributes()) {
 		if (att.GetAttributeType() == "ProductAttribute_BodyCompatibility_TA") {
-			auto bodyCompt = ProductAttribute_BodyCompatibilityWrapper(att.memory_address);
-			for (auto compatBody : bodyCompt.GetCompatibleBodies()) {
-				if (compatBody.IsNull()) continue;
-				data.compatibleProducts.push_back(compatBody.GetID());
+			auto body_compatibility_attribute = ProductAttribute_BodyCompatibilityWrapper(att.memory_address);
+			for (auto compatible_body : body_compatibility_attribute.GetCompatibleBodies()) {
+				if (compatible_body.IsNull()) continue;
+				data.compatibleProducts.push_back(compatible_body.GetID());
 			}
 		}
 	}
@@ -115,8 +93,8 @@ void BetterItemExport::GetCompatibleProducts(ProductWrapper& prod, ProductData& 
 
 void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data)
 {
-	auto quality = static_cast<PRODUCTQUALITY>(prod.GetQuality());
-	data.qualityId = (int)quality;
+	data.qualityId = static_cast<int>(prod.GetQuality());
+	const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId);
 	switch (quality)
 	{
 	case Common:
@@ -149,15 +127,15 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 	case 9: // TODO: replace with Legacy when it's available upstream
 		data.qualityName = "Legacy";
 		break;
-	default:
-		data.qualityName = "Unknown";
-		break;
+	//default:
+	//	data.qualityName = "Unknown";
+	//	break;
 	}
 }
 
 void BetterItemExport::RLCDExport()
 {
-	std::set<EQUIPSLOT> slotsToExport{ 
+	std::set<EQUIPSLOT> slots_to_export{ 
 		EQUIPSLOT::BODY, 
 		EQUIPSLOT::ROCKETBOOST, 
 		EQUIPSLOT::WHEELS, 
@@ -167,7 +145,7 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::TOPPER,
 		EQUIPSLOT::PAINTFINISH
 	};
-	std::set<int> itemsToExclude{
+	std::set<int> items_to_exclude{
 		1412, // Mystery Universal Decal
 		1470, // Black Market Preview
 		3138, // Mystery Item
@@ -181,10 +159,10 @@ void BetterItemExport::RLCDExport()
 		5369, // Very Rare Drop
 	};
 	std::ofstream log{gameWrapper->GetBakkesModPath() / "rlcd_export.log"};
-	auto itemsToExport = GetProducts([&](ProductData& prod) {
+	auto items_to_export = GetProducts([&](ProductData& prod) {
 		if (prod.id != 0 &&
-			slotsToExport.find((EQUIPSLOT)prod.slotId) != slotsToExport.end() &&
-			itemsToExclude.find(prod.id) == itemsToExclude.end())
+			slots_to_export.find(static_cast<EQUIPSLOT>(prod.slotId)) != slots_to_export.end() &&
+			items_to_exclude.find(prod.id) == items_to_exclude.end())
 		{
 			return true;
 		}
@@ -192,15 +170,15 @@ void BetterItemExport::RLCDExport()
 	});
 
 	// Find duplicate items, removing the lower/replaced
-	for (auto i = itemsToExport.begin(); i != itemsToExport.end();) {
+	for (auto i = items_to_export.begin(); i != items_to_export.end();) {
 		// If there are any duplicate items with a higher id, remove this one
-		const auto j = std::find_if(i + 1, itemsToExport.end(), [&](auto item) {
+		const auto j = std::find_if(i + 1, items_to_export.end(), [&](auto item) {
 			if ((*i).assetPath == item.assetPath)
 				return true;
 			return false;
 		});
 
-		if (j == itemsToExport.end()) {
+		if (j == items_to_export.end()) {
 			++i;
 		} else {
 			const auto a = *i;
@@ -208,11 +186,11 @@ void BetterItemExport::RLCDExport()
 			log << "info: " << a.id << " (" << a.productName << ") and "<< b.id
 				<< " (" << b.productName << ") have the same asset path ("
 				<< a.assetPath << "), dropping " << a.id << "\n";
-			i = itemsToExport.erase(i);
+			i = items_to_export.erase(i);
 		}
 	}
 
-	json j = itemsToExport;
+	json j = items_to_export;
 	std::ofstream myfile;
 	myfile.open(gameWrapper->GetBakkesModPath() / "rlcd_export.json");
 	if (myfile)
@@ -231,7 +209,7 @@ void BetterItemExport::RLCDExport()
 		<< std::endl;
 
 	// print item data
-	for (auto item : itemsToExport) {
+	for (const auto& item : items_to_export) {
 		csv 
 			<< item.id << ","
 			<< item.productName << ","
@@ -244,12 +222,12 @@ void BetterItemExport::RLCDExport()
 	csv.close();
 }
 
-std::vector<ProductData> BetterItemExport::GetProducts(std::function<bool(ProductData&)> filter)
+std::vector<ProductData> BetterItemExport::GetProducts(const std::function<bool(ProductData&)> filter)
 {
 	auto items = gameWrapper->GetItemsWrapper().GetAllProducts();
 	std::vector<ProductData> products;
 	for (auto item : items) {
-		if (item.memory_address == 0) continue;
+		if (item.IsNull()) continue;
 		auto prod = GetProductData(item);
 		if (filter(prod)) {
 			products.push_back(prod);
@@ -270,8 +248,8 @@ std::string ProductData::DebugString()
 
 	if (!compatibleProducts.empty()) {
 		ss << "Compatible bodies:\n";
-		for (auto bodyId : compatibleProducts) {
-			ss << "\t" << bodyId << "\n";
+		for (auto body_id : compatibleProducts) {
+			ss << "\t" << body_id << "\n";
 		}
 	}
 	
