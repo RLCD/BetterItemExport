@@ -205,7 +205,7 @@ void BetterItemExport::RLCDExport()
 		<< "IsPaintable" << ","
 		<< "Slot" << ","
 		<< "AssetPath" << ","
-		<< "Quality" << ","
+		<< "Quality"
 		<< std::endl;
 
 	// print item data
