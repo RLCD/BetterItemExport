@@ -16,31 +16,6 @@ void BetterItemExport::onUnload()
 {
 }
 
-std::tuple<bool, SpecialEdition> BetterItemExport::IsSpecialEdition(ProductWrapper& prod_to_check)
-{
-
-	static std::map<int, SpecialEdition> special_edition_set;
-	if (special_edition_set.empty()) {
-		auto all_products = gameWrapper->GetItemsWrapper().GetAllProducts();
-		for (auto prod : all_products) {
-			if (prod.memory_address == 0) continue;
-			for (auto att : prod.GetAttributes()) {
-				if (att.GetAttributeType() == "ProductAttribute_SpecialEditionSettings_TA") {
-					auto se_attribute = ProductAttribute_SpecialEditionSettingsWrapper(att.memory_address);
-					auto editions = se_attribute.GetEditions();
-					for (const auto& edition : editions) {
-						special_edition_set.insert({ edition.productId, edition });
-					}
-				}
-			}
-		}
-	}
-	if (auto it = special_edition_set.find(prod_to_check.GetID()); it != special_edition_set.end()) {
-		return {true, it->second};
-	}
-	return { false, SpecialEdition{} };
-}
-
 ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 {
 	ProductData data;
@@ -64,11 +39,6 @@ ProductData BetterItemExport::GetProductData(ProductWrapper& prod)
 	data.thumbnailName = prod.GetThumbnailAssetName();
 
 	data.paintable = prod.IsPaintable();
-
-	auto [isSe, edition] = IsSpecialEdition(prod);
-	if (isSe) {
-		data.productName += ": " + edition.label;
-	}
 
 	GetCompatibleProducts(prod, data);
 
