@@ -97,7 +97,8 @@ void BetterItemExport::GetCompatibleProducts(ProductWrapper& prod, ProductData& 
 void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data)
 {
 	data.qualityId = static_cast<int>(prod.GetQuality());
-	const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); //line causing issues. basically instead of using PRODUCTQUALITY get the enum from EnumWrapper::GetProductQualities() and save it?
+	const auto quality = static_cast<>(data.qualityId);
+	//const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); //line causing issues. basically instead of using PRODUCTQUALITY get the enum from EnumWrapper::GetProductQualities() and save it?
 	//var = static_cast<enum>(int);
 	switch (quality)
 	{
