@@ -4,6 +4,7 @@
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/plugin/pluginwindow.h"
 #include "bakkesmod/wrappers/items/ItemsWrapper.h"
+#include "bakkesmod/wrappers/Engine/EngineTAWrapper.h" //included for update
 constexpr auto plugin_version = "1.0";
 
 enum class EQUIPSLOT {
