@@ -99,6 +99,7 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 	data.qualityId = static_cast<int>(prod.GetQuality());
 
 	//Grab enum from EnumWrapper and iterate through it to grab all values
+	//TODO: save enum and use it for the cases below
 	auto ItemQuality = EnumWrapper::GetProductQualities();
 	std::map PossibleEnumValues = ItemQuality.GetPossibleValues();
 	for (const auto& elem : PossibleEnumValues)
@@ -107,8 +108,10 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 		std::string EnumValues = std::to_string(elem.first);
 	}
 
-	//const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); //line causing issues. basically instead of using PRODUCTQUALITY get the enum from EnumWrapper::GetProductQualities() and save it?
+	//const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); 
 	//var = static_cast<enum>(int);
+
+	//redefinition issues here; each case is still using PRODUCTQUALITY. basically, need to use the new enum's values instead. 
 	switch (quality)
 	{
 	case Common:
