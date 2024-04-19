@@ -97,7 +97,16 @@ void BetterItemExport::GetCompatibleProducts(ProductWrapper& prod, ProductData& 
 void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data)
 {
 	data.qualityId = static_cast<int>(prod.GetQuality());
-	const auto quality = static_cast<>(data.qualityId);
+
+	//Grab enum from EnumWrapper and iterate through it to grab all values
+	auto ItemQuality = EnumWrapper::GetProductQualities();
+	std::map PossibleEnumValues = ItemQuality.GetPossibleValues();
+	for (const auto& elem : PossibleEnumValues)
+	{
+		std::string EnumLabel = ItemQuality.GetEnumLabel(elem.first);
+		std::string EnumValues = std::to_string(elem.first);
+	}
+
 	//const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); //line causing issues. basically instead of using PRODUCTQUALITY get the enum from EnumWrapper::GetProductQualities() and save it?
 	//var = static_cast<enum>(int);
 	switch (quality)
@@ -148,7 +157,8 @@ void BetterItemExport::RLCDExport()
 		EQUIPSLOT::TRAIL, 
 		EQUIPSLOT::DECAL,
 		EQUIPSLOT::TOPPER,
-		EQUIPSLOT::PAINTFINISH
+		EQUIPSLOT::PAINTFINISH,
+		EQUIPSLOT::GOALEXPLOSION
 	};
 	std::set<int> items_to_exclude{
 		1412, // Mystery Universal Decal
