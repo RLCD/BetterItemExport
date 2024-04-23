@@ -100,48 +100,53 @@ void BetterItemExport::GetProductQuality(ProductWrapper& prod, ProductData& data
 
 	//Grab enum from EnumWrapper and iterate through it to grab all values
 	//TODO: save enum and use it for the cases below
-	auto ItemQuality = EnumWrapper::GetProductQualities();
-	std::map PossibleEnumValues = ItemQuality.GetPossibleValues();
+	const auto ItemQuality = EnumWrapper::GetProductQualities();
+	const std::map PossibleEnumValues = ItemQuality.GetPossibleValues();
+	
 	for (const auto& elem : PossibleEnumValues)
 	{
 		std::string EnumLabel = ItemQuality.GetEnumLabel(elem.first);
 		std::string EnumValues = std::to_string(elem.first);
 	}
 
+	//could give it a new enum we define and it would work; not ideal cause the more "dynamic" the code (less user defined values, more values grabbed from the game itself) the more future proof it is.
+	//
 	//const auto quality = static_cast<PRODUCTQUALITY>(data.qualityId); 
 	//var = static_cast<enum>(int);
+	
+	//ideally use the enum's values here for each case for readability; just using ints for now to solve redefitions.
+	//TODO: change the strings after data.qualityname to use the new enum's names for future proofing (or we can just ignore it and hard code new strings).
 
-	//redefinition issues here; each case is still using PRODUCTQUALITY. basically, need to use the new enum's values instead. 
 	switch (quality)
 	{
-	case Common:
+	case 0:
 		data.qualityName = "Common";
 		break;
-	case Uncommon:
+	case 1:
 		data.qualityName = "Uncommon";
 		break;
-	case Rare:
+	case 2:
 		data.qualityName = "Rare";
 		break;
-	case VeryRare:
+	case 3:
 		data.qualityName = "Very Rare";
 		break;
-	case Import:
+	case 4:
 		data.qualityName = "Import";
 		break;
-	case Exotic:
+	case 5:
 		data.qualityName = "Exotic";
 		break;
-	case BlackMarket:
+	case 6:
 		data.qualityName = "Black Market";
 		break;
-	case Premium:
+	case 7:
 		data.qualityName = "Premium";
 		break;
-	case Limited:
+	case 8:
 		data.qualityName = "Limited";
 		break;
-	case 9: // TODO: replace with Legacy when it's available upstream
+	case 9:
 		data.qualityName = "Legacy";
 		break;
 	//default:
